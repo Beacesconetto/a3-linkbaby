@@ -8,7 +8,6 @@ function App() {
 
   return (
     <div>
-     
         <>
           <p>Bem-vindo, usuário!</p>
           <button onClick={logout}>Logout</button>
