@@ -3,10 +3,13 @@ package models
 import (
 	"context"
 	"log"
+	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/joho/godotenv"
 )
 
 var DB *mongo.Client
@@ -14,7 +17,12 @@ var Ctx = context.Background()
 
 // Conectar ao MongoDB
 func ConnectDatabase() {
-	mongoURI := "mongodb+srv://beacesconetto203:7Gw6Vusz92JKGllA@cluster0.w4ruo.mongodb.net/"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
 		mongoURI = "mongodb+srv://beacesconetto203:7Gw6Vusz92JKGllA@cluster0.w4ruo.mongodb.net/"
 	}
