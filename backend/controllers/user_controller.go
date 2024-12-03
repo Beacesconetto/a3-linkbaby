@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 func CreateUser(c *gin.Context) {
 	var newUser models.Usuario
 
@@ -31,7 +29,6 @@ func CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, createdUser)
 }
-
 
 func LoginUser(c *gin.Context) {
 	var loginData struct {
@@ -55,20 +52,32 @@ func LoginUser(c *gin.Context) {
 }
 
 func GetUserByEmail(c *gin.Context) {
-	email := c.DefaultQuery("email", "") 
+	// Obtém o email da query string
+	email := c.DefaultQuery("email", "")
 
+	// Verifica se o email foi fornecido
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "email parameter is required"})
 		return
 	}
 
+	// Cria uma variável para armazenar o usuário
 	var user models.Usuario
-	if err := models.DB.Where("email = ?", email).First(&user).Error; err != nil {
+
+	// Consulta no MongoDB pelo email
+	collection := models.DB.Database("linkbaby").Collection("usuarios")
+	err := collection.FindOne(models.Ctx, map[string]interface{}{"email": email}).Decode(&user)
+
+	// Se não encontrar o usuário, retorna erro 404
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
+	// Remove a senha do usuário antes de enviar
 	user.Senha = ""
+
+	// Retorna os dados do usuário
 	c.JSON(http.StatusOK, user)
 }
 

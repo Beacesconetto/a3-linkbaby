@@ -1,64 +1,56 @@
 package models
 
 import (
+	"context"
 	"log"
-"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"os"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *gorm.DB
+var DB *mongo.Client
+var Ctx = context.Background()
 
+// Conectar ao MongoDB
 func ConnectDatabase() {
-	
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = "localhost"
+	mongoURI := "mongodb+srv://beacesconetto203:7Gw6Vusz92JKGllA@cluster0.w4ruo.mongodb.net/"
+	if mongoURI == "" {
+		mongoURI = "mongodb+srv://beacesconetto203:7Gw6Vusz92JKGllA@cluster0.w4ruo.mongodb.net/"
 	}
 
-	dbPort := os.Getenv("DB_PORT")
-	if dbPort == "" {
-		dbPort = "3306"
-	}
-
-	dbUser := os.Getenv("DB_USER")
-	if dbUser == "" {
-		dbUser = "linkbaby" 
-	}
-
-	dbPass := os.Getenv("DB_PASSWORD")
-	if dbPass == "" {
-		dbPass = "linkbaby" 
-	}
-
-
-
-	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/linkbaby?charset=utf8mb4&parseTime=True&loc=Local"
-
-	fmt.Println(dsn)
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	clientOptions := options.Client().ApplyURI(mongoURI)
+	client, err := mongo.Connect(Ctx, clientOptions)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	sqlDB, err := db.DB()
+	err = client.Ping(Ctx, nil)
 	if err != nil {
-		log.Fatalf("Failed to get SQL DB instance: %v", err)
+		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
 
-	err = sqlDB.Ping()
+	log.Println("Successfully connected to MongoDB!")
+
+	DB = client
+}
+
+func InsertUser(newUser Usuario) error {
+	collection := DB.Database("linkbaby").Collection("usuarios")
+
+	// Inserindo o novo usuário no MongoDB
+	_, err := collection.InsertOne(Ctx, bson.M{
+		"nome":      newUser.Nome,
+		"email":     newUser.Email,
+		"telefone":  newUser.Telefone,
+		"senha":     newUser.Senha,
+		"categoria": newUser.Categoria,
+	})
+
 	if err != nil {
-		log.Fatalf("Database connection test failed: %v", err)
+		log.Fatalf("Error inserting user: %v", err)
+		return err
 	}
 
-	log.Println("Successfully connected to the database!")
-
-	err = db.AutoMigrate(&Usuario{})
-	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
-	}
-
-	DB = db
+	return nil
 }
