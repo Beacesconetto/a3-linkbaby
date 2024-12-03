@@ -8,10 +8,8 @@ import (
 )
 
 func CreateAnuncio(newAnuncio models.Anuncio) (models.Anuncio, error) {
-	// Conecta à coleção de anúncios no MongoDB
 	collection := models.DB.Database("linkbaby").Collection("anuncios")
 
-	// Insere o novo anúncio no MongoDB
 	_, err := collection.InsertOne(models.Ctx, bson.M{
 		"descricao":  newAnuncio.Descricao,
 		"usuario_id": newAnuncio.UsuarioID,
@@ -29,22 +27,20 @@ func CreateAnuncio(newAnuncio models.Anuncio) (models.Anuncio, error) {
 func GetAnunciosByEmail(email string) ([]models.Anuncio, error) {
 	var anuncios []models.Anuncio
 
-	// Conecta à coleção de anúncios no MongoDB
 	collection := models.DB.Database("linkbaby").Collection("anuncios")
 
-	// Consulta no MongoDB para encontrar os anúncios do usuário baseado no email
 	cursor, err := collection.Aggregate(models.Ctx, []bson.M{
 		{
 			"$lookup": bson.M{
-				"from":         "usuarios",   // Nome da coleção de usuários
-				"localField":   "usuario_id", // Campo do anúncio que referencia o usuário
-				"foreignField": "_id",        // Campo do usuário que será comparado
-				"as":           "usuario",    // Nome do campo resultante da junção
+				"from":         "usuarios",
+				"localField":   "usuario_id",
+				"foreignField": "_id",
+				"as":           "usuario",
 			},
 		},
 		{
 			"$match": bson.M{
-				"usuario.email": email, // Condição de filtro para o email do usuário
+				"usuario.email": email,
 			},
 		},
 	})
@@ -53,7 +49,6 @@ func GetAnunciosByEmail(email string) ([]models.Anuncio, error) {
 		return nil, fmt.Errorf("erro ao buscar anúncios: %v", err)
 	}
 
-	// Decodifica os resultados no slice de anúncios
 	if err := cursor.All(models.Ctx, &anuncios); err != nil {
 		return nil, fmt.Errorf("erro ao decodificar os anúncios: %v", err)
 	}
@@ -64,16 +59,13 @@ func GetAnunciosByEmail(email string) ([]models.Anuncio, error) {
 func GetAllAnuncios() ([]models.Anuncio, error) {
 	var anuncios []models.Anuncio
 
-	// Conecta à coleção de anúncios no MongoDB
 	collection := models.DB.Database("linkbaby").Collection("anuncios")
 
-	// Recupera todos os anúncios
 	cursor, err := collection.Find(models.Ctx, bson.M{})
 	if err != nil {
 		return nil, fmt.Errorf("erro ao buscar todos os anúncios: %v", err)
 	}
 
-	// Decodifica os resultados no slice de anúncios
 	if err := cursor.All(models.Ctx, &anuncios); err != nil {
 		return nil, fmt.Errorf("erro ao decodificar os anúncios: %v", err)
 	}

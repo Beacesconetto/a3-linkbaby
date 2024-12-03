@@ -52,32 +52,25 @@ func LoginUser(c *gin.Context) {
 }
 
 func GetUserByEmail(c *gin.Context) {
-	// Obtém o email da query string
 	email := c.DefaultQuery("email", "")
 
-	// Verifica se o email foi fornecido
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "email parameter is required"})
 		return
 	}
 
-	// Cria uma variável para armazenar o usuário
 	var user models.Usuario
 
-	// Consulta no MongoDB pelo email
 	collection := models.DB.Database("linkbaby").Collection("usuarios")
 	err := collection.FindOne(models.Ctx, map[string]interface{}{"email": email}).Decode(&user)
 
-	// Se não encontrar o usuário, retorna erro 404
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
-	// Remove a senha do usuário antes de enviar
 	user.Senha = ""
 
-	// Retorna os dados do usuário
 	c.JSON(http.StatusOK, user)
 }
 

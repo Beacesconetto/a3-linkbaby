@@ -15,7 +15,6 @@ import (
 var DB *mongo.Client
 var Ctx = context.Background()
 
-// Conectar ao MongoDB
 func ConnectDatabase() {
 	err := godotenv.Load()
 	if err != nil {
@@ -46,7 +45,6 @@ func ConnectDatabase() {
 func InsertUser(newUser Usuario) error {
 	collection := DB.Database("linkbaby").Collection("usuarios")
 
-	// Inserindo o novo usuário no MongoDB
 	_, err := collection.InsertOne(Ctx, bson.M{
 		"nome":      newUser.Nome,
 		"email":     newUser.Email,
