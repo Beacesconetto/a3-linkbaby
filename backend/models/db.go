@@ -24,7 +24,7 @@ func ConnectDatabase() {
 
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb+srv://beacesconetto203:7Gw6Vusz92JKGllA@cluster0.w4ruo.mongodb.net/"
+		mongoURI = "mongodb+srv://diegoMongo:08052021Bea@cluster0.yzp4w.mongodb.net/linkbady?retryWrites=true&w=majority&appName=Cluster0"
 	}
 
 	clientOptions := options.Client().ApplyURI(mongoURI)
